@@ -17,7 +17,7 @@ namespace frontier_exploration {
 
         if (idx > sizeX * sizeY - 1)
         {
-            ROS_WARN("Evaluating nhood for offmap point");
+            ROS_WARN("Searching neighbourhood for off-map point");
             return out;
         }
 
@@ -72,7 +72,7 @@ namespace frontier_exploration {
         return out;
     }
 
-    bool nearestCell(size_t& result, size_t start, uint8_t val,
+    bool nearestCell(size_t& outResult, size_t start, uint8_t val,
                      const costmap_2d::Costmap2D& costmap)
     {
         const uint8_t* map = costmap.getCharMap();
@@ -100,12 +100,12 @@ namespace frontier_exploration {
             // return if cell of correct value is found
             if (map[idx] == val)
             {
-                result = idx;
+                outResult = idx;
                 return true;
             }
 
             // iterate over all adjacent unvisited cells
-            for (unsigned nbr : nhood8(idx, costmap))
+            for (auto nbr : nhood8(idx, costmap))
             {
                 if (!visited[nbr])
                 {

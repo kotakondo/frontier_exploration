@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <visualization_msgs/MarkerArray.h>
+#include <std_srvs/Empty.h>
 
 namespace frontier_exploration {
     class Explore
@@ -35,6 +36,10 @@ namespace frontier_exploration {
 
         bool goalOnBlacklist(const geometry_msgs::Point& goal);
 
+        bool onExplorationStart(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+        bool onExplorationAbort(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+
+    private:
         ros::NodeHandle* _pnh;
         ros::NodeHandle* _nh;
         ros::Publisher _markerPub;
@@ -46,6 +51,7 @@ namespace frontier_exploration {
         ros::Timer _explorationTimer;
         ros::Timer _oneShotTimer;
 
+        ros::ServiceServer _explorationStartSrv, _explorationAbortSrv;
         std::vector<geometry_msgs::Point> _frontierBlacklist;
         geometry_msgs::Point _prevGoal;
         double _prevDistance;
@@ -56,6 +62,7 @@ namespace frontier_exploration {
         double _potentialScale, _orientationScale, _gainScale;
         ros::Duration _progressTimeout;
         bool _visualize;
+        std::atomic<bool> _active;
     };
 } // namespace frontier_exploration
 

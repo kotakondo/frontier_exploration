@@ -10,6 +10,4 @@ int main(int argc, char** argv)
     ros::NodeHandle nh, pnh("~");
     frontier_exploration::Explore explore(&nh, &pnh);
     ros::spin();
-
-    return 0;
 }

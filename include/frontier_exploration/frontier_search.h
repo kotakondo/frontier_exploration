@@ -18,6 +18,20 @@ namespace frontier_exploration {
 
     class FrontierSearch
     {
+        enum CellState
+        {
+            // Enqueued by outer BFS
+            MAP_OPEN,
+            // Dequeued by outer BFS
+            MAP_CLOSED,
+            // Enqueued by inner BFS
+            FRONTIER_OPEN,
+            // Dequeued by inner BFS
+            FRONTIER_CLOSED,
+            // Cell hasn't been checked yet
+            UNCHECKED
+        };
+
     public:
         FrontierSearch() = default;
 
@@ -27,11 +41,8 @@ namespace frontier_exploration {
         std::vector<Frontier> searchFrom(const geometry_msgs::Point& position);
 
     protected:
-        Frontier buildNewFrontier(size_t initialCell, size_t reference,
-                                  std::vector<bool>& frontierFlag);
-
-        bool isNewFrontierCell(size_t idx, const std::vector<bool>& frontierFlag);
-
+        Frontier buildFrontier(size_t initialCell, size_t reference, std::vector<CellState>& cellStates);
+        bool isFrontierCell(size_t idx);
         double frontierCost(const Frontier& frontier);
 
     private:

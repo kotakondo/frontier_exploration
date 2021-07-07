@@ -90,7 +90,7 @@ namespace frontier_exploration {
             auto cellCost = static_cast<uint8_t>(msg->data[i]);
             costmapData[i] = COST_TRANSLATION_TABLE[cellCost];
         }
-        ROS_DEBUG("map updated, written %lu values", costmapSize);
+        ROS_DEBUG("Map updated, written %lu values", costmapSize);
     }
 
     geometry_msgs::Pose Costmap2DClient::getRobotPose() const

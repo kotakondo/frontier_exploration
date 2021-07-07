@@ -21,15 +21,12 @@ namespace frontier_exploration {
 
         const std::string& getGlobalFrameID() const { return _globalFrame; }
 
-        //  const std::string &getBaseFrameID() const { return _robotBaseFrame; }
-
     protected:
         void updateFullMap(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 
+    protected:
         costmap_2d::Costmap2D _costmap;
-
         const tf::TransformListener* const _tf;
-
         std::string _globalFrame;
         std::string _robotBaseFrame;
         double _tfTolerance;

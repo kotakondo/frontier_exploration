@@ -4,14 +4,6 @@
 
 #define ATTRIBUTE_UNUSED(expr) (void)(expr)
 
-inline static bool operator==(const geometry_msgs::Point& one, const geometry_msgs::Point& two)
-{
-    double dx = one.x - two.x;
-    double dy = one.y - two.y;
-    double dist = sqrt(dx * dx + dy * dy);
-    return dist < 0.01;
-}
-
 namespace frontier_exploration {
     Explore::Explore(ros::NodeHandle* nh, ros::NodeHandle* pnh) :
         _nh(nh),
@@ -25,6 +17,7 @@ namespace frontier_exploration {
         _orientationScale(0.0),
         _gainScale(1.0),
         _visualize(false),
+        _active(false),
         _search{}
     {
         double timeout;
@@ -36,7 +29,7 @@ namespace frontier_exploration {
         _pnh->param("potential_scale", _potentialScale, 1e-3);
         _pnh->param("orientation_scale", _orientationScale, 0.0);
         _pnh->param("gain_scale", _gainScale, 1.0);
-        _pnh->param("min_frontier_size", minFrontierSize, 0.5);
+        _pnh->param("minimum_frontier_size", minFrontierSize, 0.5);
 
         _search = frontier_exploration::FrontierSearch(_costmapClient.getCostmap(), _potentialScale,
                                                        _gainScale, minFrontierSize);
@@ -50,8 +43,15 @@ namespace frontier_exploration {
         _mbClient.waitForServer();
         ROS_INFO("Connected to move_base server");
 
+        _explorationStartSrv = _pnh->advertiseService("start", &Explore::onExplorationStart, this);
+        _explorationAbortSrv = _pnh->advertiseService("abort", &Explore::onExplorationAbort, this);
+
+        ATTRIBUTE_UNUSED(_explorationStartSrv);
+        ATTRIBUTE_UNUSED(_explorationAbortSrv);
+
         _explorationTimer = _nh->createTimer(ros::Duration(1. / _plannerFrequency),
                                              [this](const ros::TimerEvent&) { makePlan(); });
+        _active = true;
     }
 
     Explore::~Explore() { stop(); }
@@ -74,7 +74,7 @@ namespace frontier_exploration {
         green.b = 0;
         green.a = 1.0;
 
-        ROS_DEBUG("visualising %lu frontiers", frontiers.size());
+        ROS_DEBUG("Visualising %lu frontiers", frontiers.size());
         visualization_msgs::MarkerArray markersMsg;
         std::vector<visualization_msgs::Marker>& markers = markersMsg.markers;
         visualization_msgs::Marker m;
@@ -118,11 +118,13 @@ namespace frontier_exploration {
 
     void Explore::makePlan()
     {
+        if (!_active)
+            return;
         // find frontiers
         auto pose = _costmapClient.getRobotPose();
         // get frontiers sorted according to cost
         auto frontiers = _search.searchFrom(pose.position);
-        ROS_INFO("found %lu frontiers", frontiers.size());
+        ROS_INFO("Found %lu frontiers", frontiers.size());
 
         if (frontiers.empty())
         {
@@ -178,6 +180,8 @@ namespace frontier_exploration {
                                          const move_base_msgs::MoveBaseResultConstPtr& result) {
                 reachedGoal(status, result, targetPosition);
             });
+        ROS_INFO("Moving towards (%.2f, %.2f)", goal.target_pose.pose.position.x,
+                 goal.target_pose.pose.position.y);
     }
 
     bool Explore::goalOnBlacklist(const geometry_msgs::Point& goal)
@@ -206,7 +210,7 @@ namespace frontier_exploration {
         }
 
         // find new goal immediately regardless of planning frequency.
-        // execute via timer to prevent dead lock in move_base_client (this is
+        // execute via timer to prevent dead lock in _mbClient (this is
         // callback for sendGoal, which is called in makePlan). the timer must live
         // until callback is executed.
         _oneShotTimer = _nh->createTimer(
@@ -214,13 +218,35 @@ namespace frontier_exploration {
         ATTRIBUTE_UNUSED(_oneShotTimer);
     }
 
-    void Explore::start() { _explorationTimer.start(); }
+    bool Explore::onExplorationStart(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
+    {
+        start();
+        return true;
+    }
+
+    bool Explore::onExplorationAbort(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
+    {
+        ROS_INFO("Request received to abort exploration");
+        stop();
+        return true;
+    }
+
+    void Explore::start()
+    {
+        if (_active)
+            return;
+        _explorationTimer.start();
+        _active = true;
+    }
 
     void Explore::stop()
     {
+        if (!_active)
+            return;
         _mbClient.cancelAllGoals();
         _explorationTimer.stop();
         ROS_INFO("Exploration aborted.");
+        _active = false;
     }
 
 } // namespace frontier_exploration

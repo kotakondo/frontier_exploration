@@ -42,9 +42,7 @@ namespace frontier_exploration {
         _sizeX = _costmap->getSizeInCellsX();
         _sizeY = _costmap->getSizeInCellsY();
 
-        // initialize flag arrays to keep track of visited and frontier cells
-        std::vector<bool> frontierFlag(_sizeX * _sizeY, false);
-        std::vector<bool> visitedFlag(_sizeX * _sizeY, false);
+        std::vector<CellState> cellStates(_sizeX * _sizeY, UNCHECKED);
 
         // initialize breadth first search
         std::queue<size_t> bfs;
@@ -59,34 +57,39 @@ namespace frontier_exploration {
             bfs.push(pos);
             ROS_WARN("Could not find nearby clear cell to start search");
         }
-        visitedFlag[bfs.front()] = true;
+
+        cellStates[bfs.front()] = MAP_OPEN;
 
         while (!bfs.empty())
         {
-            size_t idx = bfs.front();
+            size_t p = bfs.front();
             bfs.pop();
 
-            // iterate over 4-connected neighbourhood
-            for (auto nbr : nhood4(idx, *_costmap))
+            if (cellStates[p] == MAP_CLOSED)
+                continue;
+
+            if (isFrontierCell(p))
             {
-                // add to queue all free, unvisited cells, use descending search in case
-                // initialized on non-free cell
-                if (_map[nbr] <= _map[idx] && !visitedFlag[nbr])
+                Frontier newFrontier = buildFrontier(p, pos, cellStates);
+                if (newFrontier.size * _costmap->getResolution() >= _minFrontierSize)
                 {
-                    visitedFlag[nbr] = true;
-                    bfs.push(nbr);
-                    // check if cell is new frontier cell (unvisited, NO_INFORMATION, free
-                    // neighbour)
-                } else if (isNewFrontierCell(nbr, frontierFlag))
-                {
-                    frontierFlag[nbr] = true;
-                    Frontier newFrontier = buildNewFrontier(nbr, pos, frontierFlag);
-                    if (newFrontier.size * _costmap->getResolution() >= _minFrontierSize)
-                    {
-                        frontierList.push_back(newFrontier);
-                    }
+                    frontierList.push_back(newFrontier);
                 }
             }
+            for (auto nbr : nhood8(p, *_costmap))
+            {
+                auto nHood = nhood8(nbr, *_costmap);
+                bool hasFreeNeighbour =
+                    std::any_of(nHood.begin(), nHood.end(),
+                                [&map = this->_map](auto idx) { return map[idx] == FREE_SPACE; });
+                if (cellStates[nbr] != MAP_OPEN && cellStates[nbr] != MAP_CLOSED &&
+                    hasFreeNeighbour)
+                {
+                    bfs.push(nbr);
+                    cellStates[nbr] = MAP_OPEN;
+                }
+            }
+            cellStates[p] = MAP_CLOSED;
         }
 
         // set costs of frontiers
@@ -100,26 +103,25 @@ namespace frontier_exploration {
         return frontierList;
     }
 
-    Frontier FrontierSearch::buildNewFrontier(size_t initialCell, size_t reference,
-                                              std::vector<bool>& frontierFlag)
+    Frontier FrontierSearch::buildFrontier(size_t initialCell, size_t reference,
+                                           std::vector<CellState>& cellStates)
     {
-        // initialize frontier structure
         Frontier output;
+        std::vector<size_t> frontierIndices;
+
         output.centroid.x = 0;
         output.centroid.y = 0;
         output.size = 1;
         output.minDistance = std::numeric_limits<double>::infinity();
 
-        // record initial contact point for frontier
         uint ix, iy;
         _costmap->indexToCells(initialCell, ix, iy);
         _costmap->mapToWorld(ix, iy, output.initial.x, output.initial.y);
 
-        // push initial cell onto queue
         std::queue<size_t> bfs;
         bfs.push(initialCell);
+        cellStates[initialCell] = FRONTIER_OPEN;
 
-        // cache reference position in world coords
         uint rx, ry;
         double referenceX, referenceY;
         _costmap->indexToCells(reference, rx, ry);
@@ -127,66 +129,73 @@ namespace frontier_exploration {
 
         while (!bfs.empty())
         {
-            size_t idx = bfs.front();
+            auto p = bfs.front();
             bfs.pop();
 
-            // try adding cells in 8-connected neighborhood to frontier
-            for (size_t nbr : nhood8(idx, *_costmap))
+            if (cellStates[p] == FRONTIER_CLOSED || cellStates[p] == MAP_CLOSED)
+                continue;
+
+            if (isFrontierCell(p))
             {
-                // check if neighbour is a potential frontier cell
-                if (isNewFrontierCell(nbr, frontierFlag))
+                uint mx, my;
+                double wx, wy;
+                _costmap->indexToCells(p, mx, my);
+                _costmap->mapToWorld(mx, my, wx, wy);
+
+                geometry_msgs::Point point;
+                point.x = wx;
+                point.y = wy;
+                output.points.push_back(point);
+
+                // update frontier size
+                output.size++;
+
+                // update centroid of frontier
+                output.centroid.x += wx;
+                output.centroid.y += wy;
+
+                // determine frontier's distance from robot, going by closest grid cell
+                // to robot
+                double distance = sqrt(pow((double(referenceX) - double(wx)), 2.0) +
+                                       pow((double(referenceY) - double(wy)), 2.0));
+                if (distance < output.minDistance)
                 {
-                    // mark cell as frontier
-                    frontierFlag[nbr] = true;
-                    uint mx, my;
-                    double wx, wy;
-                    _costmap->indexToCells(nbr, mx, my);
-                    _costmap->mapToWorld(mx, my, wx, wy);
+                    output.minDistance = distance;
+                    output.middle.x = wx;
+                    output.middle.y = wy;
+                }
 
-                    geometry_msgs::Point point;
-                    point.x = wx;
-                    point.y = wy;
-                    output.points.push_back(point);
-
-                    // update frontier size
-                    output.size++;
-
-                    // update centroid of frontier
-                    output.centroid.x += wx;
-                    output.centroid.y += wy;
-
-                    // determine frontier's distance from robot, going by closest gridcell
-                    // to robot
-                    double distance = sqrt(pow((double(referenceX) - double(wx)), 2.0) +
-                                           pow((double(referenceY) - double(wy)), 2.0));
-                    if (distance < output.minDistance)
+                // add to queue for breadth first search
+                bfs.push(p);
+                frontierIndices.push_back(p);
+                for (auto nbr : nhood8(p, *_costmap))
+                {
+                    if (cellStates[nbr] == MAP_OPEN || cellStates[nbr] == UNCHECKED)
                     {
-                        output.minDistance = distance;
-                        output.middle.x = wx;
-                        output.middle.y = wy;
+                        bfs.push(nbr);
+                        cellStates[nbr] = FRONTIER_OPEN;
                     }
-
-                    // add to queue for breadth first search
-                    bfs.push(nbr);
                 }
             }
+            cellStates[p] = FRONTIER_CLOSED;
         }
+        std::for_each(frontierIndices.begin(), frontierIndices.end(),
+                      [&cellStates](auto idx) { cellStates[idx] = MAP_CLOSED; });
 
-        // average out frontier centroid
         output.centroid.x /= output.size;
         output.centroid.y /= output.size;
+
         return output;
     }
 
-    bool FrontierSearch::isNewFrontierCell(size_t idx, const std::vector<bool>& frontierFlag)
+    bool FrontierSearch::isFrontierCell(size_t idx)
     {
-        // check that cell is unknown and not already marked as frontier
-        if (_map[idx] != NO_INFORMATION || frontierFlag[idx])
+        if (_map[idx] != NO_INFORMATION)
             return false;
-
         auto nHood = nhood4(idx, *_costmap);
+
         return std::any_of(nHood.begin(), nHood.end(),
-                           [&map = this->_map](size_t idx) { return map[idx] == FREE_SPACE; });
+                           [map = this->_map](auto idx) { return map[idx] == FREE_SPACE; });
     }
 
     double FrontierSearch::frontierCost(const Frontier& frontier)
