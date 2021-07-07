@@ -15,8 +15,12 @@ namespace frontier_exploration {
     FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap, double potentialScale,
                                    double gainScale, double minFrontierSize) :
         _costmap(costmap),
-        _potentialScale(potentialScale), _gainScale(gainScale), _minFrontierSize(minFrontierSize),
-        _map(nullptr), _sizeX{}, _sizeY{}
+        _potentialScale(potentialScale),
+        _gainScale(gainScale),
+        _minFrontierSize(minFrontierSize),
+        _map(nullptr),
+        _sizeX{},
+        _sizeY{}
     {
     }
 

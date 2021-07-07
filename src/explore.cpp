@@ -14,10 +14,19 @@ inline static bool operator==(const geometry_msgs::Point& one, const geometry_ms
 
 namespace frontier_exploration {
     Explore::Explore(ros::NodeHandle* nh, ros::NodeHandle* pnh) :
-        _nh(nh), _pnh(pnh), _tf(ros::Duration(10.0)), _costmapClient(*nh, *pnh, &_tf),
-        _mbClient("move_base"), _prevDistance(0), _lastMarkersCount(0), _plannerFrequency(1.0),
-        _potentialScale(1.e-3), _orientationScale(0.0), _gainScale(1.0),
-        _visualize(false), _search{}
+        _nh(nh),
+        _pnh(pnh),
+        _tf(ros::Duration(10.0)),
+        _costmapClient(*nh, *pnh, &_tf),
+        _mbClient("move_base"),
+        _prevDistance(0),
+        _lastMarkersCount(0),
+        _plannerFrequency(1.0),
+        _potentialScale(1.e-3),
+        _orientationScale(0.0),
+        _gainScale(1.0),
+        _visualize(false),
+        _search{}
     {
         double timeout;
         double minFrontierSize;

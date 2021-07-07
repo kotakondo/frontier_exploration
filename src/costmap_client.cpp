@@ -28,7 +28,8 @@ namespace frontier_exploration {
     Costmap2DClient::Costmap2DClient(ros::NodeHandle& nh, ros::NodeHandle& pnh,
                                      const tf::TransformListener* tf) :
         _tf(tf),
-        _tfTolerance(0.3), COST_TRANSLATION_TABLE(initTranslationTable())
+        _tfTolerance(0.3),
+        COST_TRANSLATION_TABLE(initTranslationTable())
     {
         std::string costmapTopic("costmap");
         std::string footprint;
