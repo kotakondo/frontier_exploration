@@ -20,7 +20,6 @@ namespace frontier_exploration {
         _costmapClient(*nh, *pnh, &_tf),
         _mbClient("move_base"),
         _prevDistance(0),
-        _lastMarkersCount(0),
         _plannerFrequency(1.0),
         _potentialScale(1.e-3),
         _orientationScale(0.0),
@@ -57,7 +56,7 @@ namespace frontier_exploration {
 
     Explore::~Explore() { stop(); }
 
-    void Explore::visualizeFrontiers(const std::vector<frontier_exploration::Frontier>& frontiers)
+    void Explore::visualizeFrontiers(const std::vector<Frontier>& frontiers)
     {
         std_msgs::ColorRGBA blue;
         blue.r = 0;
@@ -90,7 +89,7 @@ namespace frontier_exploration {
         m.color.g = 0;
         m.color.b = 255;
         m.color.a = 255;
-        m.lifetime = ros::Duration(1./_plannerFrequency);
+        m.lifetime = ros::Duration(1. / _plannerFrequency);
         m.frame_locked = true;
 
         m.action = visualization_msgs::Marker::ADD;
@@ -114,16 +113,6 @@ namespace frontier_exploration {
             markers.push_back(m);
             ++id;
         }
-//        size_t currentMarkersCount = markers.size();
-
-//         delete previous markers, which are now unused
-//        m.action = visualization_msgs::Marker::DELETE;
-//        for (; id < _lastMarkersCount; ++id)
-//        {
-//            m.id = int(id);
-//            markers.push_back(m);
-//        }
-
         _markerPub.publish(markersMsg);
     }
 
@@ -133,11 +122,7 @@ namespace frontier_exploration {
         auto pose = _costmapClient.getRobotPose();
         // get frontiers sorted according to cost
         auto frontiers = _search.searchFrom(pose.position);
-        ROS_DEBUG("found %lu frontiers", frontiers.size());
-        for (size_t i = 0; i < frontiers.size(); ++i)
-        {
-            ROS_DEBUG("frontier %zd cost: %f", i, frontiers[i].cost);
-        }
+        ROS_INFO("found %lu frontiers", frontiers.size());
 
         if (frontiers.empty())
         {
@@ -147,15 +132,12 @@ namespace frontier_exploration {
 
         // publish frontiers as visualization markers
         if (_visualize)
-        {
             visualizeFrontiers(frontiers);
-        }
 
         // find non blacklisted frontier
-        auto frontier = std::find_if_not(frontiers.begin(), frontiers.end(),
-                                         [this](const frontier_exploration::Frontier& f) {
-                                             return goalOnBlacklist(f.centroid);
-                                         });
+        auto frontier =
+            std::find_if_not(frontiers.begin(), frontiers.end(),
+                             [this](const Frontier& f) { return goalOnBlacklist(f.centroid); });
         if (frontier == frontiers.end())
         {
             stop();
@@ -176,12 +158,12 @@ namespace frontier_exploration {
         if (ros::Time::now() - _lastProgress > _progressTimeout)
         {
             _frontierBlacklist.push_back(targetPosition);
-            ROS_DEBUG("Adding current goal to black list");
+            ROS_INFO("Adding current goal to black list");
             makePlan();
             return;
         }
 
-        // we don't need to do anything if we still pursuing the same goal
+        // we don't need to do anything if we are still pursuing the same goal
         if (sameGoal)
             return;
 
@@ -200,7 +182,7 @@ namespace frontier_exploration {
 
     bool Explore::goalOnBlacklist(const geometry_msgs::Point& goal)
     {
-        costmap_2d::Costmap2D* costmap = _costmapClient.getCostmap();
+        const costmap_2d::Costmap2D* const costmap = _costmapClient.getCostmap();
 
         // check if a goal is on the blacklist for goals that we're pursuing
         return std::any_of(_frontierBlacklist.begin(), _frontierBlacklist.end(),
@@ -220,7 +202,7 @@ namespace frontier_exploration {
         if (status == actionlib::SimpleClientGoalState::ABORTED)
         {
             _frontierBlacklist.push_back(frontier_goal);
-            ROS_DEBUG("Adding current goal to black list");
+            ROS_INFO("Adding current goal to black list");
         }
 
         // find new goal immediately regardless of planning frequency.
@@ -238,7 +220,7 @@ namespace frontier_exploration {
     {
         _mbClient.cancelAllGoals();
         _explorationTimer.stop();
-        ROS_INFO("Exploration stopped.");
+        ROS_INFO("Exploration aborted.");
     }
 
 } // namespace frontier_exploration

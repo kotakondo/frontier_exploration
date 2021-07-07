@@ -27,7 +27,7 @@ namespace frontier_exploration {
     private:
         void makePlan();
 
-        void visualizeFrontiers(const std::vector<frontier_exploration::Frontier>& frontiers);
+        void visualizeFrontiers(const std::vector<Frontier>& frontiers);
 
         void reachedGoal(const actionlib::SimpleClientGoalState& status,
                          const move_base_msgs::MoveBaseResultConstPtr& result,
@@ -50,7 +50,6 @@ namespace frontier_exploration {
         geometry_msgs::Point _prevGoal;
         double _prevDistance;
         ros::Time _lastProgress;
-        size_t _lastMarkersCount;
 
         // parameters
         double _plannerFrequency;
