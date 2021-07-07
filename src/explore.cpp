@@ -90,8 +90,7 @@ namespace frontier_exploration {
         m.color.g = 0;
         m.color.b = 255;
         m.color.a = 255;
-        // lives forever
-        m.lifetime = ros::Duration(0);
+        m.lifetime = ros::Duration(1./_plannerFrequency);
         m.frame_locked = true;
 
         m.action = visualization_msgs::Marker::ADD;
@@ -115,17 +114,16 @@ namespace frontier_exploration {
             markers.push_back(m);
             ++id;
         }
-        size_t currentMarkersCount = markers.size();
+//        size_t currentMarkersCount = markers.size();
 
-        // delete previous markers, which are now unused
-        m.action = visualization_msgs::Marker::DELETE;
-        for (; id < _lastMarkersCount; ++id)
-        {
-            m.id = int(id);
-            markers.push_back(m);
-        }
+//         delete previous markers, which are now unused
+//        m.action = visualization_msgs::Marker::DELETE;
+//        for (; id < _lastMarkersCount; ++id)
+//        {
+//            m.id = int(id);
+//            markers.push_back(m);
+//        }
 
-        _lastMarkersCount = currentMarkersCount;
         _markerPub.publish(markersMsg);
     }
 
