@@ -26,14 +26,15 @@ namespace frontier_exploration {
 
     std::vector<Frontier> FrontierSearch::searchFrom(const geometry_msgs::Point& position)
     {
-        std::vector<Frontier> frontierList;
 
         uint mx, my;
         if (!_costmap->worldToMap(position.x, position.y, mx, my))
         {
             ROS_ERROR("Robot out of costmap bounds, cannot search for frontiers");
-            return frontierList;
+            return {};
         }
+
+        std::vector<Frontier> frontierList;
 
         // make sure map is consistent and locked for duration of search
         std::lock_guard<costmap_2d::Costmap2D::mutex_t> lock(*(_costmap->getMutex()));
@@ -42,9 +43,10 @@ namespace frontier_exploration {
         _sizeX = _costmap->getSizeInCellsX();
         _sizeY = _costmap->getSizeInCellsY();
 
+        // mark all cells as unchecked
         std::vector<CellState> cellStates(_sizeX * _sizeY, UNCHECKED);
 
-        // initialize breadth first search
+        // initialize breadth first search (outer)
         std::queue<size_t> bfs;
 
         // find closest clear cell to start search
@@ -70,18 +72,25 @@ namespace frontier_exploration {
 
             if (isFrontierCell(p))
             {
+                // If we encountered a frontier cell, we run another bfs (inner BFS) starting from
+                // this frontier cell to extract the complete frontier it is a part of. By keeping
+                // track of the cell state we make sure no frontier cell is assigned to multiple frontiers
                 Frontier newFrontier = buildFrontier(p, pos, cellStates);
+                // Threshold based on frontier size
                 if (newFrontier.size * _costmap->getResolution() >= _minFrontierSize)
                 {
                     frontierList.push_back(newFrontier);
                 }
             }
+            // Iterate over neighbours of current point
             for (auto nbr : nhood8(p, *_costmap))
             {
+                // Check neighbourhood of neighbour
                 auto nHood = nhood8(nbr, *_costmap);
                 bool hasFreeNeighbour =
                     std::any_of(nHood.begin(), nHood.end(),
                                 [&map = this->_map](auto idx) { return map[idx] == FREE_SPACE; });
+                // Include neighbour in search iff it has a free neighbour
                 if (cellStates[nbr] != MAP_OPEN && cellStates[nbr] != MAP_CLOSED &&
                     hasFreeNeighbour)
                 {
@@ -97,6 +106,7 @@ namespace frontier_exploration {
         {
             frontier.cost = frontierCost(frontier);
         }
+        // sort frontiers based on cost
         std::sort(frontierList.begin(), frontierList.end(),
                   [](const Frontier& f1, const Frontier& f2) { return f1.cost < f2.cost; });
 
@@ -179,6 +189,7 @@ namespace frontier_exploration {
             }
             cellStates[p] = FRONTIER_CLOSED;
         }
+        // mark all frontier points as processed
         std::for_each(frontierIndices.begin(), frontierIndices.end(),
                       [&cellStates](auto idx) { cellStates[idx] = MAP_CLOSED; });
 

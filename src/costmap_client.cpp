@@ -40,7 +40,7 @@ namespace frontier_exploration {
         _costmapSub = nh.subscribe<nav_msgs::OccupancyGrid>(costmapTopic, 1000,
                                                             &Costmap2DClient::updateFullMap, this);
         ATTRIBUTE_UNUSED(_costmapSub);
-        ROS_INFO_STREAM("Waiting for costmap to become available, topic: " << costmapTopic);
+        ROS_INFO_STREAM("Waiting for costmap to become available on topic: " << costmapTopic);
         auto costmapMsg = ros::topic::waitForMessage<nav_msgs::OccupancyGrid>(costmapTopic, nh);
         updateFullMap(costmapMsg);
 
@@ -77,14 +77,14 @@ namespace frontier_exploration {
         double originX = msg->info.origin.position.x;
         double originY = msg->info.origin.position.y;
 
-        ROS_DEBUG("Received full new map, resizing to: (%ld, %ld)", sizeCellsX, sizeCellsY);
+        ROS_DEBUG("Received full new map, resizing to: (%lu, %lu)", sizeCellsX, sizeCellsY);
         _costmap.resizeMap(sizeCellsX, sizeCellsY, resolution, originX, originY);
 
         std::lock_guard<costmap_2d::Costmap2D::mutex_t> lock(*_costmap.getMutex());
 
         uint8_t* costmapData = _costmap.getCharMap();
         size_t costmapSize = _costmap.getSizeInCellsX() * _costmap.getSizeInCellsY();
-        ROS_DEBUG("full map update, %lu values", costmapSize);
+        ROS_DEBUG("Full map update, %lu values", costmapSize);
         for (size_t i = 0; i < costmapSize && i < msg->data.size(); ++i)
         {
             auto cellCost = static_cast<uint8_t>(msg->data[i]);

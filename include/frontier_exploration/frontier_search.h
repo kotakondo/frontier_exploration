@@ -4,11 +4,11 @@
 #include <costmap_2d/costmap_2d.h>
 
 namespace frontier_exploration {
-
+    // Represents a frontier
     struct Frontier
     {
-        std::uint32_t size;
-        double minDistance;
+        std::uint32_t size; // number of points
+        double minDistance; // minimum distance from robot position
         double cost;
         geometry_msgs::Point initial;
         geometry_msgs::Point centroid;
@@ -18,6 +18,7 @@ namespace frontier_exploration {
 
     class FrontierSearch
     {
+        // Represents state of a cell in costmap during frontier search
         enum CellState
         {
             // Enqueued by outer BFS

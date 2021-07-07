@@ -44,6 +44,7 @@ namespace frontier_exploration {
         ros::NodeHandle* _nh;
         ros::Publisher _markerPub;
         tf::TransformListener _tf;
+        std::atomic<bool> _active;
 
         Costmap2DClient _costmapClient;
         actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> _mbClient;
@@ -59,10 +60,9 @@ namespace frontier_exploration {
 
         // parameters
         double _plannerFrequency;
-        double _potentialScale, _orientationScale, _gainScale;
+        double _potentialScale, _gainScale;
         ros::Duration _progressTimeout;
         bool _visualize;
-        std::atomic<bool> _active;
     };
 } // namespace frontier_exploration
 

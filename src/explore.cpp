@@ -14,7 +14,6 @@ namespace frontier_exploration {
         _prevDistance(0),
         _plannerFrequency(1.0),
         _potentialScale(1.e-3),
-        _orientationScale(0.0),
         _gainScale(1.0),
         _visualize(false),
         _active(false),
@@ -27,7 +26,6 @@ namespace frontier_exploration {
         _progressTimeout = ros::Duration(timeout);
         _pnh->param("visualize", _visualize, false);
         _pnh->param("potential_scale", _potentialScale, 1e-3);
-        _pnh->param("orientation_scale", _orientationScale, 0.0);
         _pnh->param("gain_scale", _gainScale, 1.0);
         _pnh->param("minimum_frontier_size", minFrontierSize, 0.5);
 
@@ -43,6 +41,7 @@ namespace frontier_exploration {
         _mbClient.waitForServer();
         ROS_INFO("Connected to move_base server");
 
+        // services
         _explorationStartSrv = _pnh->advertiseService("start", &Explore::onExplorationStart, this);
         _explorationAbortSrv = _pnh->advertiseService("abort", &Explore::onExplorationAbort, this);
 
@@ -89,6 +88,7 @@ namespace frontier_exploration {
         m.color.g = 0;
         m.color.b = 255;
         m.color.a = 255;
+        // Set lifetime for markers to be in sync with planner frequency
         m.lifetime = ros::Duration(1. / _plannerFrequency);
         m.frame_locked = true;
 
@@ -120,7 +120,7 @@ namespace frontier_exploration {
     {
         if (!_active)
             return;
-        // find frontiers
+        // get current robot pose
         auto pose = _costmapClient.getRobotPose();
         // get frontiers sorted according to cost
         auto frontiers = _search.searchFrom(pose.position);
@@ -145,6 +145,7 @@ namespace frontier_exploration {
             stop();
             return;
         }
+        // set the goal as centroid of chosen frontier
         geometry_msgs::Point targetPosition = frontier->centroid;
 
         // time out if we are not making any progress
@@ -169,7 +170,7 @@ namespace frontier_exploration {
         if (sameGoal)
             return;
 
-        // send goal to move_base if we have something new to pursue
+        // send goal to move_base if we have a new frontier to pursue
         move_base_msgs::MoveBaseGoal goal;
         goal.target_pose.pose.position = targetPosition;
         goal.target_pose.pose.orientation.w = 1.;
@@ -209,7 +210,7 @@ namespace frontier_exploration {
             ROS_INFO("Adding current goal to black list");
         }
 
-        // find new goal immediately regardless of planning frequency.
+        // Find new goal immediately regardless of planning frequency.
         // execute via timer to prevent dead lock in _mbClient (this is
         // callback for sendGoal, which is called in makePlan). the timer must live
         // until callback is executed.
