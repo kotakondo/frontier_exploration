@@ -32,12 +32,14 @@ install dependence ros packages (ref: https://emanual.robotis.com/docs/en/platfo
   ros-noetic-rosserial-msgs ros-noetic-amcl ros-noetic-map-server \
   ros-noetic-move-base ros-noetic-urdf ros-noetic-xacro \
   ros-noetic-compressed-image-transport ros-noetic-rqt* ros-noetic-rviz \
-  ros-noetic-gmapping ros-noetic-navigation ros-noetic-interactive-markers```
+  ros-noetic-gmapping ros-noetic-navigation ros-noetic-interactive-markers
+```
 
 install turtlebot3 packages (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/)
 ```sudo apt install ros-noetic-dynamixel-sdk
       sudo apt install ros-noetic-turtlebot3-msgs
-      sudo apt install ros-noetic-turtlebot```
+      sudo apt install ros-noetic-turtlebot
+```
 
 install simulation package in `src` folder (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
 ```git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git```
