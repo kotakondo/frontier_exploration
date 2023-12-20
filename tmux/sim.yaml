@@ -1,0 +1,17 @@
+session_name: perception_exploration
+
+options:
+  default-command: /bin/bash
+
+windows:
+
+- window_name: perception
+  layout: tiled
+  focus: true
+
+  panes:
+    - roscore
+    - roslaunch --wait turtlebot3_gazebo turtlebot3_house.launch
+    - roslaunch --wait turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
+    - sleep 5; roslaunch --wait turtlebot3_navigation move_base.launch 
+    - roslaunch --wait frontier_exploration explore_costmap.launch

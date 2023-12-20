@@ -54,19 +54,30 @@ sudo apt install ros-noetic-turtlebot
 git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
 ```
 
+- install turtlebot3 packages
+
+```bash
+git clone https://github.com/kotakondo/turtlebot3.git
+```
+
 - set up tortlebot3 model (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
 
+-- burger (no camera)
 ```bash
 echo "export TURTLEBOT3_MODEL=burger" >> ~/.bashrc
 ```
 
 or 
 
+-- waffle (with camera)
+
 ```bash
 echo "export TURTLEBOT3_MODEL=waffle" >> ~/.bashrc
 ```
 
 or 
+
+-- waffle_pi (with camera)
 
 ```bash
 echo "export TURTLEBOT3_MODEL=waffle_pi" >> ~/.bashrc
@@ -75,6 +86,11 @@ echo "export TURTLEBOT3_MODEL=waffle_pi" >> ~/.bashrc
 ```bash
 source ~/.bashrc
 ```
+
+### for Kimera Semantics
+sudo apt-get install ros-noetic-stereo-msgs
+sudo apt-get install ros-noetic-tf-conversions
+
 
 ## Demo using Turtlebot3
 
