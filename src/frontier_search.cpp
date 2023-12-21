@@ -12,12 +12,15 @@ namespace frontier_exploration {
     using costmap_2d::LETHAL_OBSTACLE;
     using costmap_2d::NO_INFORMATION;
 
-    FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap, double potentialScale,
-                                   double gainScale, double minFrontierSize) :
+    FrontierSearch::FrontierSearch(costmap_2d::Costmap2D* costmap, double potentialWeight,
+                                   double gainWeight, double closeFrontierWeight, double minFrontierSize,
+                                   double frontierProximityThreshold) :
         _costmap(costmap),
-        _potentialScale(potentialScale),
-        _gainScale(gainScale),
+        _potentialWeight(potentialWeight),
+        _gainWeight(gainWeight),
+        _closeFrontierWeight(closeFrontierWeight),
         _minFrontierSize(minFrontierSize),
+        _frontierProximityThreshold(frontierProximityThreshold),
         _map(nullptr),
         _sizeX{},
         _sizeY{}
@@ -102,10 +105,8 @@ namespace frontier_exploration {
         }
 
         // set costs of frontiers
-        for (auto& frontier : frontierList)
-        {
-            frontier.cost = frontierCost(frontier);
-        }
+        frontierCost(frontierList);
+        
         // sort frontiers based on cost
         std::sort(frontierList.begin(), frontierList.end(),
                   [](const Frontier& f1, const Frontier& f2) { return f1.cost < f2.cost; });
@@ -209,9 +210,62 @@ namespace frontier_exploration {
                            [map = this->_map](auto idx) { return map[idx] == FREE_SPACE; });
     }
 
-    double FrontierSearch::frontierCost(const Frontier& frontier)
+    std::vector<Frontier> FrontierSearch::frontierCost(std::vector<Frontier> frontierList)
     {
-        return (_potentialScale * frontier.minDistance * _costmap->getResolution()) -
-               (_gainScale * frontier.size * _costmap->getResolution());
-    }
+
+        // copy frontier list
+        std::vector<Frontier> frontierListCopy = frontierList;
+
+        for (auto frontier : frontierList)
+        {
+
+            // calculate num of close frontiers
+            int numCloseFrontiers = 0;
+            for (const auto otherFrontier : frontierList)
+            {
+
+                // skip if it is the same frontier
+                if (frontier.centroid.x == otherFrontier.centroid.x &&
+                    frontier.centroid.y == otherFrontier.centroid.y)
+                {
+                    continue;
+                }
+
+                // calculate distance between frontiers
+                double dist = sqrt(pow((double(frontier.centroid.x) - double(otherFrontier.centroid.x)), 2.0) +
+                                   pow((double(frontier.centroid.y) - double(otherFrontier.centroid.y)), 2.0));
+                
+                // if the distance is less than the threshold, increment the counter
+                if (dist < _frontierProximityThreshold)
+                {
+                    numCloseFrontiers++;
+                }
+            }
+
+            // option 1:
+            // costs = min_distance - expected coverage - num of close frontiers
+            frontier.cost = (_potentialWeight * frontier.minDistance * _costmap->getResolution()) // min_distance
+                            - (_gainWeight * frontier.size * _costmap->getResolution())           // expected coverage
+                            - (_closeFrontierWeight * numCloseFrontiers);                         // num of close frontiers
+
+            // print out the values for tuning
+            // ROS_INFO("min_distance: %f", frontier.minDistance * _costmap->getResolution());
+            // ROS_INFO("expected coverage: %f", frontier.size * _costmap->getResolution());
+            // ROS_INFO("num of close frontiers: %d", numCloseFrontiers);
+
+            // option 2:
+            // cost = min_distance - expected coverage
+            // frontier.cost = (_potentialWeight * frontier.minDistance * _costmap->getResolution()) // min_distance
+            //                 - (_gainWeight * frontier.size * _costmap->getResolution());          // expected coverage
+
+            // push back the frontier
+            frontierListCopy.push_back(frontier);
+
+        } // end for
+
+        // return the frontier list
+        return frontierListCopy;
+
+    } // end frontierCost function
+
 } // namespace frontier_exploration

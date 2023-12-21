@@ -36,22 +36,22 @@ namespace frontier_exploration {
     public:
         FrontierSearch() = default;
 
-        FrontierSearch(costmap_2d::Costmap2D* costmap, double potentialScale, double gainScale,
-                       double minFrontierSize);
+        FrontierSearch(costmap_2d::Costmap2D* costmap, double potentialWeight, double gainWeight,
+                       double closeFrontierWeight, double minFrontierSize, double frontierProximityThreshold);
 
         std::vector<Frontier> searchFrom(const geometry_msgs::Point& position);
 
     protected:
         Frontier buildFrontier(size_t initialCell, size_t reference, std::vector<CellState>& cellStates);
         bool isFrontierCell(size_t idx);
-        double frontierCost(const Frontier& frontier);
+        std::vector<Frontier> frontierCost(std::vector<Frontier> frontierList);
 
     private:
         costmap_2d::Costmap2D* _costmap;
         uint8_t* _map;
         size_t _sizeX, _sizeY;
-        double _potentialScale, _gainScale;
-        double _minFrontierSize;
+        double _potentialWeight, _gainWeight, _closeFrontierWeight;
+        double _minFrontierSize, _frontierProximityThreshold;
     };
 } // namespace frontier_exploration
 #endif

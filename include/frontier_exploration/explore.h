@@ -60,7 +60,7 @@ namespace frontier_exploration {
 
         // parameters
         double _plannerFrequency;
-        double _potentialScale, _gainScale;
+        double _potentialWeight, _gainWeight, _closeFrontierWeight;
         ros::Duration _progressTimeout;
         bool _visualize;
     };

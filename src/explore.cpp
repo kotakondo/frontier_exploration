@@ -13,24 +13,27 @@ namespace frontier_exploration {
         _mbClient("move_base"),
         _prevDistance(0),
         _plannerFrequency(1.0),
-        _potentialScale(1.e-3),
-        _gainScale(1.0),
+        _potentialWeight(1.e-3),
+        _gainWeight(1.0),
+        _closeFrontierWeight(1.0),
         _visualize(false),
         _active(false),
         _search{}
     {
         double timeout;
-        double minFrontierSize;
+        double minFrontierSize, frontierProximityThreshold;
         _pnh->param("planner_frequency", _plannerFrequency, 1.0);
         _pnh->param("progress_timeout", timeout, 30.0);
         _progressTimeout = ros::Duration(timeout);
         _pnh->param("visualize", _visualize, false);
-        _pnh->param("potential_scale", _potentialScale, 1e-3);
-        _pnh->param("gain_scale", _gainScale, 1.0);
+        _pnh->param("potential_weight", _potentialWeight, 1e-3);
+        _pnh->param("gain_weight", _gainWeight, 1.0);
+        _pnh->param("close_frontier_weight", _closeFrontierWeight, 1.0);
         _pnh->param("minimum_frontier_size", minFrontierSize, 0.5);
+        _pnh->param("frontier_proximity_threshold", frontierProximityThreshold, 0.5);
 
-        _search = frontier_exploration::FrontierSearch(_costmapClient.getCostmap(), _potentialScale,
-                                                       _gainScale, minFrontierSize);
+        _search = frontier_exploration::FrontierSearch(_costmapClient.getCostmap(), _potentialWeight,
+                                                       _gainWeight, _closeFrontierWeight, minFrontierSize, frontierProximityThreshold);
 
         if (_visualize)
         {
