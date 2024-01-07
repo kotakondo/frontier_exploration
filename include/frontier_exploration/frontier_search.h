@@ -44,7 +44,7 @@ namespace frontier_exploration {
     protected:
         Frontier buildFrontier(size_t initialCell, size_t reference, std::vector<CellState>& cellStates);
         bool isFrontierCell(size_t idx);
-        std::vector<Frontier> frontierCost(std::vector<Frontier> frontierList);
+        void frontierCost(std::vector<Frontier>& frontierList);
 
     private:
         costmap_2d::Costmap2D* _costmap;

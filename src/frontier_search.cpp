@@ -210,18 +210,18 @@ namespace frontier_exploration {
                            [map = this->_map](auto idx) { return map[idx] == FREE_SPACE; });
     }
 
-    std::vector<Frontier> FrontierSearch::frontierCost(std::vector<Frontier> frontierList)
+    void FrontierSearch::frontierCost(std::vector<Frontier>& frontierList)
     {
 
         // copy frontier list
-        std::vector<Frontier> frontierListCopy = frontierList;
+        std::vector<Frontier> frontierListCopy;
 
         for (auto frontier : frontierList)
         {
 
             // calculate num of close frontiers
             int numCloseFrontiers = 0;
-            for (const auto otherFrontier : frontierList)
+            for (const auto& otherFrontier : frontierList)
             {
 
                 // skip if it is the same frontier
@@ -244,27 +244,20 @@ namespace frontier_exploration {
 
             // option 1:
             // costs = min_distance - expected coverage - num of close frontiers
-            frontier.cost = (_potentialWeight * frontier.minDistance * _costmap->getResolution()) // min_distance
+            double cost = (_potentialWeight * frontier.minDistance * _costmap->getResolution()) // min_distance
                             - (_gainWeight * frontier.size * _costmap->getResolution())           // expected coverage
                             - (_closeFrontierWeight * numCloseFrontiers);                         // num of close frontiers
-
-            // print out the values for tuning
-            // ROS_INFO("min_distance: %f", frontier.minDistance * _costmap->getResolution());
-            // ROS_INFO("expected coverage: %f", frontier.size * _costmap->getResolution());
-            // ROS_INFO("num of close frontiers: %d", numCloseFrontiers);
 
             // option 2:
             // cost = min_distance - expected coverage
             // frontier.cost = (_potentialWeight * frontier.minDistance * _costmap->getResolution()) // min_distance
             //                 - (_gainWeight * frontier.size * _costmap->getResolution());          // expected coverage
 
-            // push back the frontier
             frontierListCopy.push_back(frontier);
 
         } // end for
 
-        // return the frontier list
-        return frontierListCopy;
+        frontierList = frontierListCopy;
 
     } // end frontierCost function
 
