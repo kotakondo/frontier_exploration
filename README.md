@@ -6,19 +6,6 @@ Thread safe frontier exploration package based on fast and efficient Wavefront F
 
 Use `rosdep` to resolve ROS dependencies
 
-## References
-
-```
-@misc{topiwala2018frontier,
-      title={Frontier Based Exploration for Autonomous Robot}, 
-      author={Anirudh Topiwala and Pranav Inani and Abhishek Kathpal},
-      year={2018},
-      eprint={1806.03581},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO}
-}
-```
-
 ## Set up
 
 - clone this repository into your catkin workspace
@@ -69,7 +56,7 @@ echo "export TURTLEBOT3_MODEL=burger" >> ~/.bashrc
 
 or 
 
--- waffle (with camera)
+-- waffle (with camera - my recommendation)
 
 ```bash
 echo "export TURTLEBOT3_MODEL=waffle" >> ~/.bashrc
@@ -87,33 +74,14 @@ echo "export TURTLEBOT3_MODEL=waffle_pi" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### for Kimera Semantics
-sudo apt-get install ros-noetic-stereo-msgs
-sudo apt-get install ros-noetic-tf-conversions
-
-
 ## Demo using Turtlebot3
 
-- **Shell #1** : Gazebo
-
 ```bash
-roslaunch turtlebot3_gazebo turtlebot3_world.launch
+tmuxp load tmux/sim.yaml
 ```
 
-- **Shell #2** : SLAM + RViz
-
+### for Kimera Semantics
 ```bash
-roslaunch turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
-```
-
-- **Shell #3** : move_base
-
-```bash
-roslaunch turtlebot3_navigation move_base.launch 
-```
-
-- **Shell #4** : Frontier exploration
-
-```bash
-roslaunch frontier_exploration explore_costmap.launch
+sudo apt-get install ros-noetic-stereo-msgs
+sudo apt-get install ros-noetic-tf-conversions
 ```
