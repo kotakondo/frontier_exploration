@@ -61,7 +61,8 @@ git clone https://github.com/kotakondo/navigation.git
 echo "export TURTLEBOT3_MODEL=waffle" >> ~/.bashrc
 ```
 
-or 
+<details>
+<summary>Other models</summary> 
 
 -- burger (no camera)
 
@@ -76,6 +77,10 @@ or
 ```bash
 echo "export TURTLEBOT3_MODEL=waffle_pi" >> ~/.bashrc
 ```
+
+</details>
+
+- build
 
 ```bash
 source ~/.bashrc
