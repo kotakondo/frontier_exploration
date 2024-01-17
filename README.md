@@ -47,19 +47,26 @@ git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.
 git clone https://github.com/kotakondo/turtlebot3.git
 ```
 
+- install navigation packages
+
+```bash
+git clone https://github.com/kotakondo/navigation.git
+```
+
 - set up tortlebot3 model (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
 
--- burger (no camera)
+-- waffle (with camera - recommended)
+
 ```bash
-echo "export TURTLEBOT3_MODEL=burger" >> ~/.bashrc
+echo "export TURTLEBOT3_MODEL=waffle" >> ~/.bashrc
 ```
 
 or 
 
--- waffle (with camera - my recommendation)
+-- burger (no camera)
 
 ```bash
-echo "export TURTLEBOT3_MODEL=waffle" >> ~/.bashrc
+echo "export TURTLEBOT3_MODEL=burger" >> ~/.bashrc
 ```
 
 or 
@@ -79,6 +86,10 @@ source ~/.bashrc
 ```bash
 tmuxp load tmux/sim.yaml
 ```
+
+You will see the following screen.
+
+<img src="imgs/sim-example.png" alt="sim screen example" width="100%"/>
 
 ### for Kimera Semantics
 ```bash
