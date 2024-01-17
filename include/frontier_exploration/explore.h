@@ -56,12 +56,12 @@ namespace frontier_exploration {
         std::vector<geometry_msgs::Point> _frontierBlacklist;
         geometry_msgs::Point _prevGoal;
         double _prevDistance;
-        ros::Time _lastProgress;
+        ros::Time _lastProgress, _lastGoalSwitch;
 
         // parameters
         double _plannerFrequency;
         double _potentialWeight, _gainWeight, _closeFrontierWeight;
-        ros::Duration _progressTimeout;
+        ros::Duration _progressTimeout, _swtichTimeout;
         bool _visualize;
     };
 } // namespace frontier_exploration

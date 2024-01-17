@@ -8,6 +8,9 @@ planner_frequency: 0.33
 # the current frontier
 progress_timeout: 30.0
 
+# We don't wanna swtich goals too often, so we wait for this amount of time
+switching_timeout: 5.0
+
 # Bias frontier selection for pursuit based on distance from robot.
 # Higher the value, higher the preference for closer frontiers
 potential_weight: 3.0

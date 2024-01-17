@@ -11,7 +11,8 @@ windows:
 
   panes:
     - roscore
-    - roslaunch --wait turtlebot3_gazebo turtlebot3_house.launch
+    - roslaunch --wait turtlebot3_gazebo turtlebot3_house.launch gui:=false
     - roslaunch --wait turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
-    - sleep 5; roslaunch --wait turtlebot3_navigation move_base.launch 
+    - sleep 5; roslaunch --wait turtlebot3_navigation move_base.launch
+    # - roslaunch --wait rover_trajectory_opt lc_mpc.launch
     - roslaunch --wait frontier_exploration explore_costmap.launch

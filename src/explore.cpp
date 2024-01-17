@@ -15,7 +15,7 @@ namespace frontier_exploration {
         _plannerFrequency(1.0),
         _potentialWeight(1.e-3),
         _gainWeight(1.0),
-        _closeFrontierWeight(1.0),
+        _closeFrontierWeight(10.0),
         _visualize(false),
         _active(false),
         _search{}
@@ -25,6 +25,8 @@ namespace frontier_exploration {
         _pnh->param("planner_frequency", _plannerFrequency, 1.0);
         _pnh->param("progress_timeout", timeout, 30.0);
         _progressTimeout = ros::Duration(timeout);
+        _pnh->param("switching_timeout", timeout, 10.0);
+        _swtichTimeout = ros::Duration(timeout);
         _pnh->param("visualize", _visualize, false);
         _pnh->param("potential_weight", _potentialWeight, 1e-3);
         _pnh->param("gain_weight", _gainWeight, 1.0);
@@ -168,10 +170,20 @@ namespace frontier_exploration {
             makePlan();
             return;
         }
+        // we don't wanna swtch goals too often
+        if (ros::Time::now() - _lastGoalSwitch < _swtichTimeout)
+        {
+            ROS_INFO("Too soon to switch goals");
+            makePlan();
+            return;
+        }
 
         // we don't need to do anything if we are still pursuing the same goal
         if (sameGoal)
             return;
+
+        // record the time we switched goals
+        _lastGoalSwitch = ros::Time::now();
 
         // send goal to move_base if we have a new frontier to pursue
         move_base_msgs::MoveBaseGoal goal;
