@@ -7,12 +7,6 @@ Thread safe frontier exploration package based on fast and efficient Wavefront F
 Use `rosdep` to resolve ROS dependencies
 
 ## Set up
-
-- clone this repository into your catkin workspace
-
-```bash
-git clone https://github.com/kotakondo/frontier_exploration.git
-```
  
 - install dependence ros packages (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/)
 
@@ -35,15 +29,11 @@ sudo apt install ros-noetic-turtlebot3-msgs
 sudo apt install ros-noetic-turtlebot
 ```
 
-- install simulation package in `src` folder (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
+- clone turtlebot3_simulations, frontier_exploratoin, turtlebot3, navigation, realsense-ros, realsense_gazebo_plugin packages in `src` folder
 
 ```bash
 git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
-```
-
-- install turtlebot3, navigation, realsense-ros, realsense_gazebo_plugin packages in `src` folder
-
-```bash
+git clone https://github.com/kotakondo/frontier_exploration.git
 git clone https://github.com/kotakondo/turtlebot3.git
 git clone https://github.com/kotakondo/navigation.git
 git clone https://github.com/kotakondo/realsense-ros.git
@@ -77,9 +67,10 @@ echo "export TURTLEBOT3_MODEL=waffle_pi" >> ~/.bashrc
 
 </details>
 
-- build
+- build and source
 
 ```bash
+catkin build
 source ~/.bashrc
 ```
 
