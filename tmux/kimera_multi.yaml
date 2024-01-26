@@ -1,0 +1,32 @@
+session_name: kimera-distributed-example
+
+environment:
+  CATKIN_WS: "/home/jtorde/Research/active_cslam_ws"
+  LOG_DIR: "/home/jtorde/Research/active_cslam_ws/src/frontier_exploration/logs"
+  ROBOT0: "acl_jackal"
+  ROSBAG0: "/home/jtorde/Research/active_cslam_ws/src/frontier_exploration/data/10_14_acl_jackal.bag"
+  RATE: "1.0"
+  NUM_ROBOTS: "6"
+  BOW_SKIP_NUM: "3"
+
+options:
+  default-command: /bin/bash
+
+windows:
+- window_name: single_machine
+  layout: tiled  
+  shell_command_before:
+    - source $CATKIN_WS/devel/setup.bash
+    - mkdir -p $LOG_DIR/$ROBOT0/distributed
+
+  panes:
+    - roscore
+    - roslaunch --wait kimera_distributed kimera_distributed.launch robot_id:=0 robot_name:=$ROBOT0 num_robots:=$NUM_ROBOTS dataset_name:=Jackal log_output_path:=$LOG_DIR/$ROBOT0/distributed
+    - roslaunch --wait kimera_distributed dpgo.launch robot_id:=0 robot_name:=$ROBOT0 num_robots:=$NUM_ROBOTS dataset_name:=Jackal multi_master:=false log_output_path:=$LOG_DIR/$ROBOT0/distributed
+    - roslaunch --wait kimera_multi kimera_vio_jackal.launch robot_name:=$ROBOT0 robot_id:=0 use_d455:=true multirobot:=true lcd_no_optimize:=true use_external_odom:=true replay:=false should_use_sim_time:=true
+    # - roslaunch --wait kimera_distributed mit_rosbag.launch bagfile:=$ROSBAG0 input_ns:=$ROBOT0 output_ns:=$ROBOT0 rate:=$RATE
+    - roslaunch --wait turtlebot3_gazebo turtlebot3_house.launch
+    # - roslaunch --wait turtlebot3_gazebo turtlebot3_world.launch
+    - roslaunch --wait turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
+    - sleep 5; roslaunch --wait turtlebot3_navigation move_base.launch
+    # - roslaunch --wait frontier_exploration explore_costmap.launch
