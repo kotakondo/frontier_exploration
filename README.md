@@ -41,19 +41,16 @@ sudo apt install ros-noetic-turtlebot
 git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
 ```
 
-- install turtlebot3 packages
+- install turtlebot3, navigation, realsense-ros, realsense_gazebo_plugin packages in `src` folder
 
 ```bash
 git clone https://github.com/kotakondo/turtlebot3.git
-```
-
-- install navigation packages
-
-```bash
 git clone https://github.com/kotakondo/navigation.git
+git clone https://github.com/kotakondo/realsense-ros.git
+git clone https://github.com/pal-robotics/realsense_gazebo_plugin.git
 ```
 
-- set up tortlebot3 model (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
+- set up turtlebot3 model (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
 
 -- waffle (with camera - recommended)
 
