@@ -56,6 +56,7 @@ docker run --gpus all --env="NVIDIA_DRIVER_CAPABILITIES=all" --net=host --env="D
     git clone https://github.com/kotakondo/navigation.git
     git clone https://github.com/kotakondo/realsense-ros.git
     git clone https://github.com/pal-robotics/realsense_gazebo_plugin.git
+    git clone https://github.com/rst-tu-dortmund/costmap_converter.git
     ```
 
     - set up turtlebot3 model (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
