@@ -10,6 +10,18 @@ Use `rosdep` to resolve ROS dependencies
  
 ### Using Docker
 
+- clone turtlebot3_simulations, frontier_exploratoin, turtlebot3, navigation, realsense-ros, realsense_gazebo_plugin packages in `src` folder
+
+```bash
+git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
+git clone https://github.com/kotakondo/frontier_exploration.git
+git clone https://github.com/kotakondo/turtlebot3.git
+git clone https://github.com/kotakondo/navigation.git
+git clone https://github.com/kotakondo/realsense-ros.git
+git clone https://github.com/pal-robotics/realsense_gazebo_plugin.git
+git clone https://github.com/rst-tu-dortmund/costmap_converter.git
+```
+
 - Build the docker image
 ```bash
 docker build -f frontier_exploration/docker/Dockerfile -t active_cslam .
@@ -45,18 +57,6 @@ docker run --gpus all --env="NVIDIA_DRIVER_CAPABILITIES=all" --net=host --env="D
     sudo apt install ros-noetic-dynamixel-sdk
     sudo apt install ros-noetic-turtlebot3-msgs
     sudo apt install ros-noetic-turtlebot
-    ```
-
-    - clone turtlebot3_simulations, frontier_exploratoin, turtlebot3, navigation, realsense-ros, realsense_gazebo_plugin packages in `src` folder
-
-    ```bash
-    git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
-    git clone https://github.com/kotakondo/frontier_exploration.git
-    git clone https://github.com/kotakondo/turtlebot3.git
-    git clone https://github.com/kotakondo/navigation.git
-    git clone https://github.com/kotakondo/realsense-ros.git
-    git clone https://github.com/pal-robotics/realsense_gazebo_plugin.git
-    git clone https://github.com/rst-tu-dortmund/costmap_converter.git
     ```
 
     - set up turtlebot3 model (ref: https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
